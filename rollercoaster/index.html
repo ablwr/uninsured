@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>menstruation rollercoaster</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+		<!-- Origin Trial Token, feature = WebVR (For Chrome M62+), origin = https://threejs.org, expires = 2018-02-26 -->
+		<meta http-equiv="origin-trial" data-feature="WebVR (For Chrome M62+)" data-expires="2018-02-26" content="ApUnsKNm8cOce0NnJY05mJWYKGaTC2dw9o/+zbrmpEZk/ePiOfxjvcRnKlJUo6zYOrltLnYMcvdWjPTMCJzR1g4AAABQeyJvcmlnaW4iOiJodHRwczovL3RocmVlanMub3JnOjQ0MyIsImZlYXR1cmUiOiJXZWJWUjEuMU02MiIsImV4cGlyeSI6MTUxOTY0ODk5MX0=">
+		<style>
+			body {
+				margin: 0px;
+				color: #fff;
+				font-family: Monospace;
+				background-color: #444;
+				overflow: hidden;
+			}
+			a {
+				color: #00f;
+			}
+		</style>
+	</head>
+	<body>
+		<script src="../assets/three.js"></script>
+		<script src="../assets/WebVR.js"></script>
+		<script>
+
+function RollerCoasterGeometry( curve, divisions ) {
+
+	THREE.BufferGeometry.call( this );
+
+	var vertices = [];
+	var normals = [];
+	var colors = [];
+	var color1 = [ 200, 2, 1 ];
+	var color2 = [ 20, 5, 2 ];
+
+	var up = new THREE.Vector3( 0, 1, 0 );
+	var forward = new THREE.Vector3();
+
+	var quaternion = new THREE.Quaternion();
+	var prevQuaternion = new THREE.Quaternion();
+	prevQuaternion.setFromAxisAngle( up , Math.PI / 2 );
+
+	var point = new THREE.Vector3();
+	var prevPoint = new THREE.Vector3();
+	prevPoint.copy( curve.getPointAt( 0 ) );
+
+	// shapes
+
+	var PI2 = Math.PI * 2;
+
+	var sides = 6;
+	var tube1 = [];
+
+	for ( var i = 0; i < sides; i ++ ) {
+		var angle = ( i / sides ) * PI2;
+		tube1.push( new THREE.Vector3( Math.sin( angle ) * 0.2, Math.cos( angle ) * 0.06, 0 ) );
+	}
+
+	var sides = 6;
+
+	var vector = new THREE.Vector3();
+	var normal = new THREE.Vector3();
+
+	var vector1 = new THREE.Vector3();
+	var vector2 = new THREE.Vector3();
+	var vector3 = new THREE.Vector3();
+	var vector4 = new THREE.Vector3();
+
+	var normal1 = new THREE.Vector3();
+	var normal2 = new THREE.Vector3();
+	var normal3 = new THREE.Vector3();
+	var normal4 = new THREE.Vector3();
+
+	function extrudeShape( shape, offset, color ) {
+
+		for ( var j = 0, jl = shape.length; j < jl; j ++ ) {
+
+			var point1 = shape[ j ];
+			var point2 = shape[ ( j + 1 ) % jl ];
+
+			vector1.copy( point1 ).add( offset );
+			vector1.applyQuaternion( quaternion );
+			vector1.add( point );
+
+			vector2.copy( point2 ).add( offset );
+			vector2.applyQuaternion( quaternion );
+			vector2.add( point );
+
+			vector3.copy( point2 ).add( offset );
+			vector3.applyQuaternion( prevQuaternion );
+			vector3.add( prevPoint );
+
+			vector4.copy( point1 ).add( offset );
+			vector4.applyQuaternion( prevQuaternion );
+			vector4.add( prevPoint );
+
+			vertices.push( vector1.x, vector1.y, vector1.z );
+			vertices.push( vector2.x, vector2.y, vector2.z );
+			vertices.push( vector4.x, vector4.y, vector4.z );
+
+			vertices.push( vector2.x, vector2.y, vector2.z );
+			vertices.push( vector3.x, vector3.y, vector3.z );
+			vertices.push( vector4.x, vector4.y, vector4.z );
+
+			normal1.copy( point1 );
+			normal1.applyQuaternion( quaternion );
+			normal1.normalize();
+
+			normal2.copy( point2 );
+			normal2.applyQuaternion( quaternion );
+			normal2.normalize();
+
+			normal3.copy( point2 );
+			normal3.applyQuaternion( prevQuaternion );
+			normal3.normalize();
+
+			normal4.copy( point1 );
+			normal4.applyQuaternion( prevQuaternion );
+			normal4.normalize();
+
+			normals.push( normal1.x, normal1.y, normal1.z );
+			normals.push( normal2.x, normal2.y, normal2.z );
+			normals.push( normal4.x, normal4.y, normal4.z );
+
+			normals.push( normal2.x, normal2.y, normal2.z );
+			normals.push( normal3.x, normal3.y, normal3.z );
+			normals.push( normal4.x, normal4.y, normal4.z );
+
+			colors.push( color[ 0 ], color[ 1 ], color[ 2 ] );
+			colors.push( color[ 0 ], color[ 1 ], color[ 2 ] );
+			colors.push( color[ 0 ], color[ 1 ], color[ 2 ] );
+
+			colors.push( color[ 0 ], color[ 1 ], color[ 2 ] );
+			colors.push( color[ 0 ], color[ 1 ], color[ 2 ] );
+			colors.push( color[ 0 ], color[ 1 ], color[ 2 ] );
+
+		}
+
+	};
+
+	var offset = new THREE.Vector3();
+
+	for ( var i = 1; i <= divisions; i ++ ) {
+		point.copy( curve.getPointAt( i / divisions ) );
+		up.set( 0, 1, 0 );
+		forward.subVectors( point, prevPoint ).normalize();
+		var angle = Math.atan2( forward.x, forward.z );
+		quaternion.setFromAxisAngle( up, angle );
+		extrudeShape( tube1, offset.set( 0, 0, 0 ), color2 );
+		prevPoint.copy( point );
+		prevQuaternion.copy( quaternion );
+	}
+
+	this.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array( vertices ), 3 ) );
+	this.addAttribute( 'normal', new THREE.BufferAttribute( new Float32Array( normals ), 3 ) );
+	this.addAttribute( 'color', new THREE.BufferAttribute( new Float32Array( colors ), 3 ) );
+
+};
+
+RollerCoasterGeometry.prototype = Object.create( THREE.BufferGeometry.prototype );
+
+
+function RollerCoasterShadowGeometry( curve, divisions ) {
+
+	THREE.BufferGeometry.call( this );
+
+	var vertices = [];
+
+	var up = new THREE.Vector3( 0, 1, 0 );
+	var forward = new THREE.Vector3();
+
+	var quaternion = new THREE.Quaternion();
+	var prevQuaternion = new THREE.Quaternion();
+	prevQuaternion.setFromAxisAngle( up , Math.PI / 2 );
+
+	var point = new THREE.Vector3();
+
+	var prevPoint = new THREE.Vector3();
+	prevPoint.copy( curve.getPointAt( 0 ) );
+	prevPoint.y = 0;
+
+	var vector1 = new THREE.Vector3();
+	var vector2 = new THREE.Vector3();
+	var vector3 = new THREE.Vector3();
+	var vector4 = new THREE.Vector3();
+
+	for ( var i = 1; i <= divisions; i ++ ) {
+
+		point.copy( curve.getPointAt( i / divisions ) );
+		point.y = 0;
+
+		forward.subVectors( point, prevPoint );
+
+		var angle = Math.atan2( forward.x, forward.z );
+
+		quaternion.setFromAxisAngle( up, angle );
+
+		vector1.set( -0.9, 0, 0 );
+		vector1.applyQuaternion( quaternion );
+		vector1.add( point );
+
+		vector2.set(  0.9, 0, 0 );
+		vector2.applyQuaternion( quaternion );
+		vector2.add( point );
+
+		vector3.set(  0.9, 0, 0 );
+		vector3.applyQuaternion( prevQuaternion );
+		vector3.add( prevPoint );
+
+		vector4.set( -0.9, 0, 0 );
+		vector4.applyQuaternion( prevQuaternion );
+		vector4.add( prevPoint );
+
+		vertices.push( vector1.x, vector1.y, vector1.z );
+		vertices.push( vector2.x, vector2.y, vector2.z );
+		vertices.push( vector4.x, vector4.y, vector4.z );
+
+		vertices.push( vector2.x, vector2.y, vector2.z );
+		vertices.push( vector3.x, vector3.y, vector3.z );
+		vertices.push( vector4.x, vector4.y, vector4.z );
+
+		prevPoint.copy( point );
+		prevQuaternion.copy( quaternion );
+
+	}
+
+	this.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array( vertices ), 3 ) );
+
+};
+
+RollerCoasterShadowGeometry.prototype = Object.create( THREE.BufferGeometry.prototype );
+
+function SkyGeometry() {
+
+	THREE.BufferGeometry.call( this );
+	var vertices = [];
+	for ( var i = 0; i < 100; i ++ ) {
+		var x = 0
+		var y = Math.random() * 50 + 500;
+		var z = Math.random() * 800 - 200;
+		var size = Math.random() * 8 + 20;
+		vertices.push( x - size, y, z - size );
+		vertices.push( x + size, y, z - size );
+		vertices.push( x - size, y, z + size );
+		vertices.push( x + size, y, z - size );
+		vertices.push( x + size, y, z + size );
+		vertices.push( x - size, y, z + size );
+	}
+
+	this.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array( vertices ), 3 ) );
+};
+
+SkyGeometry.prototype = Object.create( THREE.BufferGeometry.prototype );
+
+function TreesGeometry( landscape ) {
+
+	THREE.BufferGeometry.call( this );
+
+	var vertices = [];
+	var colors = [];
+
+	var raycaster = new THREE.Raycaster();
+	raycaster.ray.direction.set( 0, -1, 0 );
+
+	for ( var i = 0; i < 2000; i ++ ) {
+
+		var x = Math.random() * 500 - 20;
+		var z = Math.random() * 500 - 20;
+
+		raycaster.ray.origin.set( x, 100, z );
+		var intersections = raycaster.intersectObject( landscape );
+		if ( intersections.length === 0 ) continue;
+
+		var y = intersections[ 0 ].point.y;
+		var height = Math.random() * 5 + 0.5;
+		var angle = Math.random() * Math.PI * 1.8;
+
+		vertices.push( x + Math.sin( angle ), y, z + Math.cos( angle ) );
+		vertices.push( x, y + height, z );
+		vertices.push( x + Math.sin( angle + Math.PI ), y, z + Math.cos( angle + Math.PI ) );
+
+		angle += Math.PI / 2;
+
+		vertices.push( x + Math.sin( angle ), y, z + Math.cos( angle ) );
+		vertices.push( x, y + height, z );
+		vertices.push( x + Math.sin( angle + Math.PI ), y, z + Math.cos( angle + Math.PI ) );
+
+		var random = Math.random() * 0.03;
+
+		for ( var j = 0; j < 6; j ++ ) {
+			colors.push( 76, 21, 4 );
+		}
+	}
+	this.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array( vertices ), 3 ) );
+	this.addAttribute( 'color', new THREE.BufferAttribute( new Float32Array( colors ), 3 ) );
+};
+
+TreesGeometry.prototype = Object.create( THREE.BufferGeometry.prototype );
+
+
+
+
+// start that coaster
+
+
+var renderer = new THREE.WebGLRenderer( { antialias: true } );
+renderer.setPixelRatio( window.devicePixelRatio );
+renderer.setSize( window.innerWidth, window.innerHeight );
+renderer.vr.enabled = true;
+document.body.appendChild( renderer.domElement );
+document.body.appendChild( WEBVR.createButton( renderer ) );
+
+var scene = new THREE.Scene();
+scene.background = new THREE.Color( 0x601100 );
+
+var light = new THREE.HemisphereLight( 0x702011, 0x190b09 );
+light.position.set( 1, 1, 1 );
+scene.add( light );
+
+var train = new THREE.Object3D();
+scene.add( train );
+
+var camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 0.1, 100 );
+train.add( camera );
+
+var geometry = new THREE.PlaneBufferGeometry( 200, 200, 10, 10 );
+geometry.rotateX( - Math.PI / 2 );
+
+var positions = geometry.attributes.position.array;
+var vertex = new THREE.Vector3();
+
+for ( var i = 0; i < positions.length; i += 3 ) {
+	vertex.fromArray( positions, i );
+	vertex.x += Math.random() * 15;
+	vertex.z += Math.random() * 5;
+	var distance = ( vertex.distanceTo( scene.position ) / 10 );
+	vertex.y = Math.random() * Math.max( 0, distance );
+	vertex.toArray( positions, i );
+}
+
+geometry.computeVertexNormals();
+
+var material = new THREE.MeshLambertMaterial( {
+	color: 0x991f0f
+} );
+
+var mesh = new THREE.Mesh( geometry, material );
+scene.add( mesh );
+
+var geometry = new TreesGeometry( mesh );
+var material = new THREE.MeshBasicMaterial( {
+	side: THREE.DoubleSide, color: 0x70270c
+} );
+var mesh = new THREE.Mesh( geometry, material );
+scene.add( mesh );
+
+var geometry = new SkyGeometry();
+var material = new THREE.MeshBasicMaterial( { color: 0x991f0f } );
+var mesh = new THREE.Mesh( geometry, material );
+scene.add( mesh );
+
+var PI2 = Math.PI * 2;
+
+var curve = ( function () {
+	var vector = new THREE.Vector3();
+	var vector2 = new THREE.Vector3();
+  
+	return {
+		getPointAt: function ( t ) {
+
+			t = t * PI2;
+
+			var x = t;
+			var y = Math.sin( t * 28 );
+			var z = t * 50;					
+
+			return vector.set( x, y, z ).multiplyScalar( 1 );
+		},
+
+		getTangentAt: function ( t ) {
+			var delta = 0.0001;
+			var t1 = Math.max( 0, t - delta );
+			var t2 = Math.min( 1, t + delta );
+      var b2 = 5
+			return vector2.copy( this.getPointAt ( t2 ) )
+				.sub( this.getPointAt( t1 ) ).normalize();
+		}
+	};
+
+} )();
+
+var geometry = new RollerCoasterGeometry( curve, 500 );
+var material = new THREE.MeshPhongMaterial( {
+	vertexColors: THREE.VertexColors
+} );
+var mesh = new THREE.Mesh( geometry, material );
+scene.add( mesh );
+
+var material = new THREE.MeshPhongMaterial();
+var mesh = new THREE.Mesh( geometry, material );
+mesh.position.y = 0.1;
+scene.add( mesh );
+
+var geometry = new RollerCoasterShadowGeometry( curve, 500 );
+var material = new THREE.MeshBasicMaterial( {
+	color: 0x480005, depthWrite: false, transparent: true
+} );
+var mesh = new THREE.Mesh( geometry, material );
+mesh.position.y = 0.1;
+scene.add( mesh );
+
+window.addEventListener( 'resize', onWindowResize, false );
+function onWindowResize() {
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+	renderer.setSize( window.innerWidth, window.innerHeight );
+}
+
+var position = new THREE.Vector3();
+var tangent = new THREE.Vector3();
+var lookAt = new THREE.Vector3();
+
+var velocity = 0;
+var progress = 0;
+
+var now = performance.now();
+
+function render() {
+
+	var then = performance.now();
+	var delta = then - now;
+
+	progress += velocity;
+	progress = progress % 1;
+  
+	position.copy( curve.getPointAt( progress ) );
+	position.y += 0.4;
+	train.position.copy( position );
+	tangent.copy( curve.getTangentAt( progress ) );
+	velocity -= tangent.y * 0.00001 * delta;
+	velocity = Math.max( 0.00004, Math.min( 0.0002, velocity ) );
+	train.lookAt( lookAt.copy( position ).sub( tangent ) );
+	renderer.render( scene, camera );
+	now = then;
+
+}
+
+renderer.animate( render );
+		</script>
+	</body>
+</html>
