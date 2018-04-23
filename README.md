@@ -1,6 +1,7 @@
 # uninsured body simulator 
 
-c/o @thisismattmiller  
+c/o [@thisismattmiller](https://github.com/thisismattmiller)  
 
-- /eye worried about pink eye (p5.js)
-- /rollercoaster every month is a dangerous hell (three.js, WebVR)
+- **/assets** duh! this is where the assets go.
+- **/eye** worried about pink eye (p5.js)
+- **/rollercoaster** every month is a dangerous hell (three.js, WebVR)
