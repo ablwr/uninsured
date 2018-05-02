@@ -46,7 +46,7 @@ class Blob {
       var yc = (p1.y + p2.y) / 2;
       ctx.quadraticCurveTo(p1.x, p1.y, xc, yc);
 
-      ctx.fillStyle = 'rgba(255,255,255,.4)';
+      ctx.fillStyle = 'rgba(255,255,255,.6)';
 
       p1 = p2;
     }
@@ -57,7 +57,7 @@ class Blob {
 
     ctx.fillStyle = this.color;
     ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,.4)';
+    ctx.strokeStyle = 'rgba(255,255,255,.6)';
 
     requestAnimationFrame(this.render.bind(this));
   }
@@ -72,7 +72,7 @@ class Blob {
     this._color = value;
   }
   get color() {
-    return this._color || 'rgba(255,255,255,.4)';
+    return this._color || 'rgba(255,255,255,.6)';
   }
   
   set canvas(value) {
